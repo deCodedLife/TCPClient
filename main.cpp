@@ -1,47 +1,37 @@
 #include <iostream>
-#include "tcp/tcpserver.h"
-#include "tcp/tcpclient.h"
+#include "customclient.h"
 
 #define SERVER_HOST "127.0.0.1"
-#define SERVER_PORT 5011
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
-    // uint server_port = SERVER_PORT;
-
-    // if (argc == 1) {
-    //     std::cout << "[-] Warn! Port not specified. Default: "
-    //               << SERVER_PORT << " Will be used" << std::endl;
-    // }
-    // else server_port = (uint) std::atoi(argv[1]);
-
-    // TCPUser server_data = TCPUser(0, NetAddr {
-    //     .tcp_host = SERVER_HOST,
-    //     .tcp_port = server_port
-    // });
-
-    // TCPServer server(server_data);
-    // server.ListenAll();
-
-    //**
-    uint server_port = SERVER_PORT;
-
-    if (argc == 1) {
-        std::cout << "[-] Warn! Port not specified. Default: "
-                  << SERVER_PORT << " Will be used" << std::endl;
+    if (argc != 4) {
+        std::cerr << "[!] Err! Server port and duration should be specified."
+                  << std::endl << "Exemple: "
+                  << "app [name] [port] [duration(seconds)]"
+                  << std::endl
+                  << "client TEST 3000 2" << std::endl;
+        exit(-1);
     }
-    else server_port = (uint) std::atoi(argv[1]);
+    std::string client_name = argv[1];
+    uint server_port = (uint) std::atoi(argv[2]);
+    uint message_delay = (uint) std::atoi(argv[3]);
 
     TCPUser server_data = TCPUser(0, NetAddr {
-        .tcp_host = "127.0.0.1",
+        .tcp_host = SERVER_HOST,
         .tcp_port = server_port
     });
 
-    TCPClient client;
+    CustomClient client;
     client.ConnectTo(server_data);
-    client.NewNessage("Here we goooooooooo!");
+    client.SetDelay(message_delay * 1000);
 
+    std::thread messageHandler([&](){
+        client.MessageBroker(client_name);
+    });
+
+    messageHandler.join();
     return 0;
 }

@@ -1,0 +1,3 @@
+[submodule "TCPLib"]
+	path = TCPLib
+	url = https://github.com/deCodedLife/TCPlib
